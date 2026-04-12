@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import { BookOpen, Wrench, ArrowRight, TrendingUp, ClipboardCheck, AlertTriangle, CalendarDays, Star, Clock } from 'lucide-react';
+import { BookOpen, Wrench, ArrowRight, TrendingUp, ClipboardCheck, AlertTriangle, CalendarDays, Star, Clock, Bell, X, ShieldCheck, GraduationCap } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [attendance, setAttendance] = useState({ percentage: 0, total: 0, absent: 0 });
   const [todaySchedule, setTodaySchedule] = useState([]);
   const [points, setPoints] = useState({ total: 0 });
+  const [popups, setPopups] = useState([]);
 
   const todayDate = new Date().toISOString().slice(0, 10);
 
@@ -31,6 +32,13 @@ export default function Dashboard() {
         });
         setTodaySchedule(sch.data);
         setPoints({ total: pts.data.total || 0 });
+        // unread notifications popup (students only)
+        if (user?.role === 'student') {
+          const nRes = await api.get('/notifications');
+          const unread = nRes.data.filter(n => !n.isRead).slice(0, 3);
+          setPopups(unread);
+          if (unread.length > 0) setTimeout(() => setPopups([]), 10000);
+        }
         setStats({
           courses:    c.data.length,
           skills:     s.data.length,
@@ -59,6 +67,50 @@ export default function Dashboard() {
 
   return (
     <div>
+      {/* Notification popups */}
+      {popups.length > 0 && (
+        <div style={{ display: 'grid', gap: 10, marginBottom: 20 }}>
+          {popups.map(n => {
+            const isAdmin = n.createdByRole === 'admin';
+            return (
+              <div key={n._id} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '14px 16px',
+                borderRadius: 'var(--radius)',
+                borderLeft: `4px solid ${isAdmin ? '#10b981' : '#ef4444'}`,
+                background: isAdmin ? '#ecfdf5' : '#fef2f2',
+                border: `1px solid ${isAdmin ? '#10b981' : '#ef4444'}`,
+              }}>
+                <div style={{ marginTop: 1, flexShrink: 0 }}>
+                  {isAdmin
+                    ? <ShieldCheck size={16} color="#10b981" />
+                    : <GraduationCap size={16} color="#ef4444" />}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.875rem', color: isAdmin ? '#065f46' : '#991b1b' }}>
+                    {n.title}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: isAdmin ? '#047857' : '#b91c1c', marginTop: 2 }}>
+                    {n.message}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                    From {n.createdByName} ({n.createdByRole})
+                  </div>
+                </div>
+                <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, flexShrink: 0 }}
+                  onClick={() => setPopups(prev => prev.filter(p => p._id !== n._id))}>
+                  <X size={14} color="var(--text-muted)" />
+                </button>
+              </div>
+            );
+          })}
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Link to="/notifications" style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 500, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Bell size={12} /> View all notifications
+            </Link>
+          </div>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.02em' }}>

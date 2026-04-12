@@ -6,7 +6,32 @@ const { protect, staffOnly } = require('../middleware/auth');
 // GET /api/notifications
 router.get('/', protect, async (req, res) => {
   try {
-    res.json(await Notification.find().sort({ createdAt: -1 }).limit(50));
+    const notifications = await Notification.find().sort({ createdAt: -1 }).limit(50);
+    const userId = req.user.id;
+    res.json(notifications.map(n => ({
+      ...n.toObject(),
+      isRead: n.readBy.some(id => String(id) === String(userId)),
+    })));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/notifications/:id/read
+router.put('/:id/read', protect, async (req, res) => {
+  try {
+    await Notification.findByIdAndUpdate(req.params.id, { $addToSet: { readBy: req.user.id } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// PUT /api/notifications/read-all
+router.put('/read-all/mark', protect, async (req, res) => {
+  try {
+    await Notification.updateMany({}, { $addToSet: { readBy: req.user.id } });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

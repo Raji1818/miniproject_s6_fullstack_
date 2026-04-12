@@ -1,10 +1,28 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../api/axios';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // always null on start → forces login
+  const [user, setUser] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnread = useCallback(async () => {
+    try {
+      const { data } = await api.get('/notifications');
+      setUnreadCount(data.filter(n => !n.isRead).length);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchUnread();
+      const interval = setInterval(fetchUnread, 30000);
+      return () => clearInterval(interval);
+    } else {
+      setUnreadCount(0);
+    }
+  }, [user, fetchUnread]);
 
   const login = async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
@@ -35,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser, unreadCount, fetchUnread }}>
       {children}
     </AuthContext.Provider>
   );

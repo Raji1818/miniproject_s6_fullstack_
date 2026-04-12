@@ -37,7 +37,7 @@ const studentLinks = [
 ];
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
-  const { user, logout } = useAuth();
+  const { user, logout, unreadCount } = useAuth();
   const navigate = useNavigate();
   const links = user?.role === 'admin' ? adminLinks : user?.role === 'faculty' ? facultyLinks : studentLinks;
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
@@ -73,6 +73,9 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           >
             <Icon size={16} />
             {label}
+            {to === '/notifications' && unreadCount > 0 && (
+              <span style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />
+            )}
           </NavLink>
         ))}
       </nav>
