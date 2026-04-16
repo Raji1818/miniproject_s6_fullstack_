@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -55,8 +55,7 @@ const FacultyRoute = ({ children }) => {
 };
 
 function AppShell() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [showReloadAnimation, setShowReloadAnimation] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -83,14 +82,12 @@ function AppShell() {
   }, []);
 
   const userInitial = user?.name?.trim()?.charAt(0)?.toUpperCase() || 'U';
-  const idLabel = user?.role === 'student' ? 'Roll Number' : user?.role === 'faculty' ? 'Employee ID' : 'Admin ID';
   const idValue = user?.idNumber || 'ID Not Assigned';
-  const roleLabel = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : '-';
+  const canEditFromHeader = user?.role === 'admin' || user?.role === 'faculty';
 
-  const handleLogout = () => {
-    setProfileMenuOpen(false);
-    logout();
-    navigate('/login');
+  const handleHeaderClick = () => {
+    if (!canEditFromHeader) return;
+    setProfileMenuOpen((open) => !open);
   };
 
   if (showReloadAnimation) {
@@ -119,9 +116,10 @@ function AppShell() {
           <div className="header-profile" ref={profileMenuRef}>
             <button
               className="header-profile-trigger"
-              onClick={() => setProfileMenuOpen((open) => !open)}
-              aria-label="Open user panel"
-              aria-expanded={profileMenuOpen}
+              onClick={handleHeaderClick}
+              aria-label={canEditFromHeader ? 'Open user panel' : 'User details'}
+              aria-expanded={canEditFromHeader ? profileMenuOpen : undefined}
+              disabled={!canEditFromHeader}
             >
               <span className="header-letter-logo" aria-hidden="true">
                 {userInitial}
@@ -131,30 +129,11 @@ function AppShell() {
                 <span className="header-profile-id">| {idValue}</span>
               </span>
             </button>
-            {profileMenuOpen && (
+            {canEditFromHeader && profileMenuOpen && (
               <div className="header-profile-panel">
-                <div className="header-panel-top">
-                  <div className="header-panel-name">{user?.name || '-'}</div>
-                  <div className="header-panel-id">{idLabel}: {idValue}</div>
-                </div>
-                <div className="header-panel-bottom">
-                  <div className="header-panel-detail">
-                    <span>Role</span>
-                    <strong>{roleLabel}</strong>
-                  </div>
-                  <div className="header-panel-detail">
-                    <span>Email</span>
-                    <strong>{user?.email || '-'}</strong>
-                  </div>
-                  {user?.role !== 'student' && (
-                    <Link to="/profile" className="header-panel-edit-link" onClick={() => setProfileMenuOpen(false)}>
-                      Edit Profile
-                    </Link>
-                  )}
-                  <button className="header-panel-logout" onClick={handleLogout}>
-                    Logout
-                  </button>
-                </div>
+                <Link to="/profile" className="header-panel-edit-link" onClick={() => setProfileMenuOpen(false)}>
+                  Edit Profile
+                </Link>
               </div>
             )}
           </div>
