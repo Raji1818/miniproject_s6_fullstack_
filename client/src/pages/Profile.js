@@ -12,7 +12,8 @@ const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'BM'];
 const YEAR_OPTIONS = Array.from({ length: 11 }, (_, index) => String(new Date().getFullYear() - 2 + index));
 
 export default function Profile() {
-  const { updateUser } = useAuth();
+  const { updateUser, user } = useAuth();
+  const isStudent = user?.role === 'student';
 
   const [profile,   setProfile]   = useState(null);
   const [stats,     setStats]     = useState({ courses: 0, skills: 0, completed: 0, inProgress: 0 });
@@ -64,6 +65,10 @@ export default function Profile() {
   }, []);
 
   const handleSave = async () => {
+    if (isStudent) {
+      flash('Students are not allowed to edit profile.', 'error');
+      return;
+    }
     setSaving(true);
     try {
       const { data } = await api.put('/profile', form);
@@ -79,6 +84,10 @@ export default function Profile() {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
+    if (isStudent) {
+      flash('Students are not allowed to edit profile.', 'error');
+      return;
+    }
     if (pwdForm.newPassword !== pwdForm.confirm)
       return flash('New passwords do not match.', 'error');
     if (pwdForm.newPassword.length < 6)
@@ -154,13 +163,15 @@ export default function Profile() {
             {profile.bio && <p style={{ color:'rgba(255,255,255,0.7)', fontSize:'0.875rem', marginTop:8, maxWidth:600 }}>{profile.bio}</p>}
           </div>
 
-          <button
-            className="btn btn-ghost"
-            style={{ background:'rgba(255,255,255,0.15)', color:'#fff', border:'1px solid rgba(255,255,255,0.3)', backdropFilter:'blur(8px)' }}
-            onClick={() => { setEditing(!editing); setTab('info'); }}
-          >
-            {editing ? <><X size={14}/> Cancel</> : <><Pencil size={14}/> Edit Profile</>}
-          </button>
+          {!isStudent && (
+            <button
+              className="btn btn-ghost"
+              style={{ background:'rgba(255,255,255,0.15)', color:'#fff', border:'1px solid rgba(255,255,255,0.3)', backdropFilter:'blur(8px)' }}
+              onClick={() => { setEditing(!editing); setTab('info'); }}
+            >
+              {editing ? <><X size={14}/> Cancel</> : <><Pencil size={14}/> Edit Profile</>}
+            </button>
+          )}
         </div>
 
         {/* Mini stats row */}
@@ -199,7 +210,7 @@ export default function Profile() {
         {[
           { key:'info',     label:'Personal Info', icon: User      },
           { key:'activity', label:'Activity',      icon: TrendingUp },
-          { key:'security', label:'Security',      icon: Lock      },
+          ...(!isStudent ? [{ key:'security', label:'Security', icon: Lock }] : []),
         ].map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setTab(key)} style={{
             display:'flex', alignItems:'center', gap:7,

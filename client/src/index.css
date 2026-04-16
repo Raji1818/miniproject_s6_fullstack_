@@ -145,7 +145,7 @@ body {
 
 .app-topbar {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 18px;
 }
@@ -348,6 +348,10 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.sidebar-footer-email strong {
+  color: var(--text);
+  font-weight: 700;
 }
 .sidebar-user-card {
   display: flex;

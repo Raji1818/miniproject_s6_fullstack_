@@ -14,6 +14,10 @@ router.get('/', protect, async (req, res) => {
 // PUT /api/profile
 router.put('/', protect, async (req, res) => {
   try {
+    if (req.user.role === 'student') {
+      return res.status(403).json({ message: 'Students are not allowed to edit profile' });
+    }
+
     const { name, phone, bio, github, linkedin, website, college, degree, department, graduationYear, currentPassword, newPassword } = req.body;
 
     const user = await User.findById(req.user.id);

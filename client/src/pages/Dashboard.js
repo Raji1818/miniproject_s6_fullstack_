@@ -57,8 +57,6 @@ export default function Dashboard() {
     not_started: <span className="badge badge-gray">Not Started</span>,
   };
 
-  const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
-
   return (
     <div>
       {/* Notification popups */}
@@ -113,13 +111,6 @@ export default function Dashboard() {
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: 3 }}>
             Here's your learning overview
           </p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="avatar" style={{ background: 'var(--primary)' }}>{initials}</div>
-          <div>
-            <div style={{ fontSize: '0.845rem', fontWeight: 600 }}>{user?.name}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Student</div>
-          </div>
         </div>
       </div>
 

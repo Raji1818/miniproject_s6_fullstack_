@@ -74,7 +74,10 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <div className="sidebar-footer-email">{user?.email || ''}</div>
+        <div className="sidebar-footer-email">
+          <strong>{user?.email || ''}</strong>
+          {user?.role ? <span> | {user.role}</span> : null}
+        </div>
         <button className="btn btn-ghost btn-sm btn-full" onClick={handleLogout}>
           <LogOut size={14} /> Sign Out
         </button>
