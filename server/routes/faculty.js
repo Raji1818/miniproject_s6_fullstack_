@@ -25,6 +25,7 @@ router.put('/students/:id', protect, facultyOnly, async (req, res) => {
 
     const allowedFields = [
       'name',
+      'idNumber',
       'email',
       'phone',
       'bio',
@@ -44,6 +45,10 @@ router.put('/students/:id', protect, facultyOnly, async (req, res) => {
     if (req.body.email && req.body.email !== student.email) {
       const existingUser = await User.findOne({ email: req.body.email, _id: { $ne: student._id } });
       if (existingUser) return res.status(400).json({ message: 'Email already exists' });
+    }
+    if (req.body.idNumber && req.body.idNumber !== student.idNumber) {
+      const existingId = await User.findOne({ idNumber: req.body.idNumber, _id: { $ne: student._id } });
+      if (existingId) return res.status(400).json({ message: 'ID number already exists' });
     }
 
     if (req.body.password) {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
-import { Menu, UserCircle } from 'lucide-react';
+import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Sidebar from './components/Sidebar';
@@ -55,7 +55,8 @@ const FacultyRoute = ({ children }) => {
 };
 
 function AppShell() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [showReloadAnimation, setShowReloadAnimation] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -81,6 +82,17 @@ function AppShell() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
+  const userInitial = user?.name?.trim()?.charAt(0)?.toUpperCase() || 'U';
+  const idLabel = user?.role === 'student' ? 'Roll Number' : user?.role === 'faculty' ? 'Employee ID' : 'Admin ID';
+  const idValue = user?.idNumber || 'ID Not Assigned';
+  const roleLabel = user?.role ? `${user.role.charAt(0).toUpperCase()}${user.role.slice(1)}` : '-';
+
+  const handleLogout = () => {
+    setProfileMenuOpen(false);
+    logout();
+    navigate('/login');
+  };
+
   if (showReloadAnimation) {
     return <ReloadAnimation />;
   }
@@ -104,22 +116,45 @@ function AppShell() {
       {sidebarOpen && <button className="sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />}
       <main className="main-content">
         <div className="app-topbar">
-          <div className="profile-menu" ref={profileMenuRef}>
+          <div className="header-profile" ref={profileMenuRef}>
             <button
-              className="profile-trigger"
+              className="header-profile-trigger"
               onClick={() => setProfileMenuOpen((open) => !open)}
-              aria-label="Open profile menu"
+              aria-label="Open user panel"
               aria-expanded={profileMenuOpen}
             >
-              <span className="profile-avatar" aria-hidden="true">
-                {user?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || <UserCircle size={16} />}
+              <span className="header-letter-logo" aria-hidden="true">
+                {userInitial}
+              </span>
+              <span className="header-profile-text">
+                <span className="header-profile-name">{(user?.name || '').toUpperCase()}</span>
+                <span className="header-profile-id">| {idValue}</span>
               </span>
             </button>
             {profileMenuOpen && (
-              <div className="profile-dropdown">
-                <Link to="/profile" className="profile-dropdown-link" onClick={() => setProfileMenuOpen(false)}>
-                  View Profile
-                </Link>
+              <div className="header-profile-panel">
+                <div className="header-panel-top">
+                  <div className="header-panel-name">{user?.name || '-'}</div>
+                  <div className="header-panel-id">{idLabel}: {idValue}</div>
+                </div>
+                <div className="header-panel-bottom">
+                  <div className="header-panel-detail">
+                    <span>Role</span>
+                    <strong>{roleLabel}</strong>
+                  </div>
+                  <div className="header-panel-detail">
+                    <span>Email</span>
+                    <strong>{user?.email || '-'}</strong>
+                  </div>
+                  {user?.role !== 'student' && (
+                    <Link to="/profile" className="header-panel-edit-link" onClick={() => setProfileMenuOpen(false)}>
+                      Edit Profile
+                    </Link>
+                  )}
+                  <button className="header-panel-logout" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </div>
               </div>
             )}
           </div>

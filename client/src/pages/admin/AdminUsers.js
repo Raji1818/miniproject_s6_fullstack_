@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
-import { Users, Search, Trash2, ShieldCheck, GraduationCap, Check, Mail, Phone, School, Globe, Pencil, Plus, X, KeyRound } from 'lucide-react';
+import { Users, Search, Trash2, ShieldCheck, GraduationCap, Check, Mail, Phone, School, Globe, Pencil, Plus, X, KeyRound, IdCard } from 'lucide-react';
 
 const DEPARTMENTS = ['CSE', 'ECE', 'EEE', 'MECH', 'BM'];
 const YEAR_OPTIONS = Array.from({ length: 11 }, (_, index) => String(new Date().getFullYear() - 2 + index));
 
 const emptyForm = {
   name: '',
+  idNumber: '',
   email: '',
   password: '',
   role: 'student',
@@ -120,6 +121,7 @@ export default function AdminUsers() {
     setEditingStudentId(user._id);
     setEditForm({
       name: user.name || '',
+      idNumber: user.idNumber || '',
       email: user.email || '',
       password: '',
       role: user.role || 'student',
@@ -175,6 +177,7 @@ export default function AdminUsers() {
 
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) ||
+    (u.idNumber || '').toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase()) ||
     (u.college || '').toLowerCase().includes(search.toLowerCase()) ||
     (u.degree || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -234,6 +237,14 @@ export default function AdminUsers() {
                   <Mail size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
                   <input className="form-input" type="email" placeholder="user@example.com" style={{ paddingLeft: 32 }}
                     value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">ID Number</label>
+                <div style={{ position: 'relative' }}>
+                  <IdCard size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-light)' }} />
+                  <input className="form-input" placeholder="Roll / Employee / Admin ID" style={{ paddingLeft: 32 }}
+                    value={form.idNumber} onChange={e => setForm({ ...form, idNumber: e.target.value })} />
                 </div>
               </div>
               <div className="form-group">
@@ -338,6 +349,10 @@ export default function AdminUsers() {
               <div className="form-group">
                 <label className="form-label">Email</label>
                 <input className="form-input" type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} required />
+              </div>
+              <div className="form-group">
+                <label className="form-label">ID Number</label>
+                <input className="form-input" value={editForm.idNumber} onChange={e => setEditForm({ ...editForm, idNumber: e.target.value })} />
               </div>
               <div className="form-group">
                 <label className="form-label">New Password</label>
@@ -512,6 +527,7 @@ export default function AdminUsers() {
             </div>
 
             <div style={{ display: 'grid', gap: 12 }}>
+              {renderDetail('ID Number', selectedUser.idNumber, IdCard)}
               {renderDetail('Email Address', selectedUser.email, Mail)}
               {renderDetail('Phone Number', selectedUser.phone, Phone)}
               {renderDetail('College', selectedUser.college, School)}

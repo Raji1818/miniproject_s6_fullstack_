@@ -21,6 +21,7 @@ router.post('/users', protect, adminOnly, async (req, res) => {
   try {
     const {
       name,
+      idNumber = '',
       email,
       password,
       role = 'student',
@@ -42,10 +43,14 @@ router.post('/users', protect, adminOnly, async (req, res) => {
     if (await User.findOne({ email })) {
       return res.status(400).json({ message: 'Email already exists' });
     }
+    if (idNumber && await User.findOne({ idNumber })) {
+      return res.status(400).json({ message: 'ID number already exists' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       name,
+      idNumber,
       email,
       password: hashedPassword,
       role,
@@ -143,6 +148,7 @@ router.post('/students', protect, adminOnly, async (req, res) => {
   try {
     const {
       name,
+      idNumber = '',
       email,
       password,
       phone = '',
@@ -163,10 +169,14 @@ router.post('/students', protect, adminOnly, async (req, res) => {
     if (await User.findOne({ email })) {
       return res.status(400).json({ message: 'Email already exists' });
     }
+    if (idNumber && await User.findOne({ idNumber })) {
+      return res.status(400).json({ message: 'ID number already exists' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const student = await User.create({
       name,
+      idNumber,
       email,
       password: hashedPassword,
       role: 'student',
@@ -195,6 +205,7 @@ router.put('/students/:id', protect, adminOnly, async (req, res) => {
 
     const allowedFields = [
       'name',
+      'idNumber',
       'email',
       'phone',
       'bio',
@@ -214,6 +225,10 @@ router.put('/students/:id', protect, adminOnly, async (req, res) => {
     if (req.body.email && req.body.email !== student.email) {
       const existingUser = await User.findOne({ email: req.body.email, _id: { $ne: student._id } });
       if (existingUser) return res.status(400).json({ message: 'Email already exists' });
+    }
+    if (req.body.idNumber && req.body.idNumber !== student.idNumber) {
+      const existingId = await User.findOne({ idNumber: req.body.idNumber, _id: { $ne: student._id } });
+      if (existingId) return res.status(400).json({ message: 'ID number already exists' });
     }
 
     if (req.body.password) {
