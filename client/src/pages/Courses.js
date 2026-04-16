@@ -2,6 +2,21 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { BookOpen, Clock, CheckCircle, Plus } from 'lucide-react';
 
+const getEmbedUrl = (url = '') => {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes('youtube.com')) {
+      const videoId = parsed.searchParams.get('v');
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+    }
+    if (parsed.hostname.includes('youtu.be')) {
+      const videoId = parsed.pathname.replace('/', '');
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`;
+    }
+  } catch {}
+  return '';
+};
+
 export default function Courses() {
   const [courses,  setCourses]  = useState([]);
   const [enrolled, setEnrolled] = useState(new Set());
@@ -43,6 +58,7 @@ export default function Courses() {
       <div className="course-grid">
         {courses.map(c => {
           const isEnrolled = enrolled.has(c._id);
+          const embedUrl = getEmbedUrl(c.videoLink);
           return (
             <div key={c._id} className="course-card">
               <div className="course-card-icon">
@@ -56,6 +72,22 @@ export default function Courses() {
               <div className="course-meta">
                 <Clock size={12} /> {c.duration}
               </div>
+              {isEnrolled && c.videoLink && (
+                <div style={{ marginTop: 10, display: 'grid', gap: 8 }}>
+                  {embedUrl ? (
+                    <iframe
+                      title={`${c.title} video`}
+                      src={embedUrl}
+                      style={{ width: '100%', minHeight: 190, border: 0, borderRadius: 10 }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : null}
+                  <a href={c.videoLink} target="_blank" rel="noreferrer" className="btn btn-light btn-sm">
+                    Watch Video
+                  </a>
+                </div>
+              )}
               <div className="course-actions">
                 <button
                   className={`btn btn-sm ${isEnrolled ? 'btn-light' : 'btn-primary'}`}

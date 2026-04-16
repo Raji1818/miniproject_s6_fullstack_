@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
+import { Menu, UserCircle } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Sidebar from './components/Sidebar';
@@ -58,6 +58,8 @@ function AppShell() {
   const { user } = useAuth();
   const [showReloadAnimation, setShowReloadAnimation] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setShowReloadAnimation(false), 900);
@@ -67,6 +69,17 @@ function AppShell() {
   useEffect(() => {
     setSidebarOpen(false);
   }, [user?.role]);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   if (showReloadAnimation) {
     return <ReloadAnimation />;
@@ -90,6 +103,27 @@ function AppShell() {
       </button>
       {sidebarOpen && <button className="sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-label="Close navigation" />}
       <main className="main-content">
+        <div className="app-topbar">
+          <div className="profile-menu" ref={profileMenuRef}>
+            <button
+              className="profile-trigger"
+              onClick={() => setProfileMenuOpen((open) => !open)}
+              aria-label="Open profile menu"
+              aria-expanded={profileMenuOpen}
+            >
+              <span className="profile-avatar" aria-hidden="true">
+                {user?.name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || <UserCircle size={16} />}
+              </span>
+            </button>
+            {profileMenuOpen && (
+              <div className="profile-dropdown">
+                <Link to="/profile" className="profile-dropdown-link" onClick={() => setProfileMenuOpen(false)}>
+                  View Profile
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
         <Routes>
           {/* Student routes */}
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

@@ -143,6 +143,67 @@ body {
 .sidebar-overlay,
 .sidebar-close-btn { display: none; }
 
+.app-topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.profile-menu {
+  position: relative;
+}
+.profile-trigger {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.profile-trigger:hover {
+  border-color: #d1d5db;
+}
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 150px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  z-index: 180;
+}
+.profile-dropdown-link {
+  display: block;
+  padding: 9px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.profile-dropdown-link:hover {
+  background: var(--border-light);
+}
+
 /* ── SIDEBAR ─────────────────────────────────────── */
 .sidebar {
   width: var(--sidebar-w);
@@ -706,6 +767,10 @@ tbody tr:hover {
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-close-btn { display: inline-flex; }
+  .app-topbar {
+    margin-bottom: 16px;
+    padding-left: 46px;
+  }
   .page-header-row {
     flex-direction: column;
     gap: 14px;

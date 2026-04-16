@@ -2,27 +2,21 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import { BookOpen, Wrench, ArrowRight, TrendingUp, ClipboardCheck, AlertTriangle, CalendarDays, Star, Clock, Bell, X, ShieldCheck, GraduationCap } from 'lucide-react';
+import { BookOpen, Wrench, ArrowRight, TrendingUp, ClipboardCheck, AlertTriangle, Bell, X, ShieldCheck, GraduationCap } from 'lucide-react';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [stats,    setStats]    = useState({ courses: 0, skills: 0, completed: 0, inProgress: 0 });
   const [progress, setProgress] = useState([]);
   const [attendance, setAttendance] = useState({ percentage: 0, total: 0, absent: 0 });
-  const [todaySchedule, setTodaySchedule] = useState([]);
-  const [points, setPoints] = useState({ total: 0 });
   const [popups, setPopups] = useState([]);
-
-  const todayDate = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [c, s, p, a, sch, pts] = await Promise.all([
+        const [c, s, p, a] = await Promise.all([
           api.get('/courses'), api.get('/skills'), api.get('/progress'),
           api.get('/attendance/me'),
-          api.get(`/schedule?date=${todayDate}`),
-          api.get('/points/me'),
         ]);
         setProgress(p.data.slice(0, 5));
         setAttendance({
@@ -30,8 +24,7 @@ export default function Dashboard() {
           total: a.data.summary?.total || 0,
           absent: a.data.summary?.absent || 0,
         });
-        setTodaySchedule(sch.data);
-        setPoints({ total: pts.data.total || 0 });
+
         // unread notifications popup (students only)
         if (user?.role === 'student') {
           const nRes = await api.get('/notifications');
@@ -39,6 +32,7 @@ export default function Dashboard() {
           setPopups(unread);
           if (unread.length > 0) setTimeout(() => setPopups([]), 10000);
         }
+
         setStats({
           courses:    c.data.length,
           skills:     s.data.length,
@@ -48,13 +42,13 @@ export default function Dashboard() {
       } catch {}
     };
     load();
-  }, [todayDate]);
+  }, [user?.role]);
 
   const statCards = [
-    { label: 'Available Courses', value: stats.courses,    icon: BookOpen,    bg: '#eff6ff', color: '#2563eb' },
-    { label: 'My Skills',         value: stats.skills,     icon: Wrench,      bg: '#ecfdf5', color: '#10b981' },
+    { label: 'Available Courses', value: stats.courses,    icon: BookOpen,      bg: '#eff6ff', color: '#2563eb' },
+    { label: 'My Skills',         value: stats.skills,     icon: Wrench,        bg: '#ecfdf5', color: '#10b981' },
     { label: 'Attendance',        value: `${attendance.percentage}%`, icon: ClipboardCheck, bg: '#fffbeb', color: '#f59e0b' },
-    { label: 'Points Earned',     value: points.total,     icon: Star,        bg: '#fdf4ff', color: '#a855f7' },
+    { label: 'In Progress',       value: stats.inProgress, icon: TrendingUp,     bg: '#f5f3ff', color: '#7c3aed' },
   ];
 
   const statusBadge = {
@@ -200,43 +194,9 @@ export default function Dashboard() {
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <Link to="/attendance" className="btn btn-primary btn-full"><ClipboardCheck size={15} /> View Attendance</Link>
-              <Link to="/schedule"   className="btn btn-ghost btn-full"><CalendarDays size={15} /> Today's Schedule</Link>
-              <Link to="/skills"  className="btn btn-success btn-full"><Wrench size={15} /> Manage Skills</Link>
+              <Link to="/skills" className="btn btn-success btn-full"><Wrench size={15} /> Manage Skills</Link>
             </div>
           </div>
-        </div>
-
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <CalendarDays size={16} color="var(--primary)" />
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Today's Schedule</span>
-            </div>
-            <Link to="/schedule" style={{ fontSize: '0.78rem', color: 'var(--primary)', textDecoration: 'none', fontWeight: 500 }}>View all</Link>
-          </div>
-          {todaySchedule.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <p style={{ fontSize: '0.845rem', color: 'var(--text-muted)' }}>No classes scheduled for today.</p>
-            </div>
-          ) : (
-            todaySchedule.flatMap(sch =>
-              sch.slots
-                .slice()
-                .sort((a, b) => a.startTime.localeCompare(b.startTime))
-                .map((slot, i) => (
-                  <div key={`${sch._id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border-light)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--primary)', fontWeight: 700, fontSize: '0.78rem', minWidth: 100 }}>
-                      <Clock size={12} /> {slot.startTime}–{slot.endTime}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '0.845rem', fontWeight: 600 }}>{slot.subject}</div>
-                      {slot.room && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{slot.room}</div>}
-                    </div>
-                    <span className="badge badge-blue">{sch.department}</span>
-                  </div>
-                ))
-            )
-          )}
         </div>
       </div>
     </div>
