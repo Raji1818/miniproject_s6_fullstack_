@@ -14,6 +14,7 @@ const YEAR_OPTIONS = Array.from({ length: 11 }, (_, index) => String(new Date().
 export default function Profile() {
   const { updateUser, user } = useAuth();
   const isStudent = user?.role === 'student';
+  const showStudentStats = isStudent;
 
   const [profile,   setProfile]   = useState(null);
   const [stats,     setStats]     = useState({ courses: 0, skills: 0, completed: 0, inProgress: 0 });
@@ -174,29 +175,30 @@ export default function Profile() {
           )}
         </div>
 
-        {/* Mini stats row */}
-        <div style={{ display:'flex', gap:32, marginTop:28, paddingTop:24, borderTop:'1px solid rgba(255,255,255,0.15)', position:'relative', zIndex:1 }}>
-          {[
-            { icon: BookOpen,    label:'Courses',    value: stats.courses    },
-            { icon: Wrench,      label:'Skills',     value: stats.skills     },
-            { icon: CheckCircle, label:'Completed',  value: stats.completed  },
-            { icon: TrendingUp,  label:'In Progress',value: stats.inProgress },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} style={{ textAlign:'center' }}>
-              <div style={{ color:'#fff', fontSize:'1.4rem', fontWeight:800 }}>{value}</div>
-              <div style={{ color:'rgba(255,255,255,0.6)', fontSize:'0.75rem', display:'flex', alignItems:'center', gap:4, justifyContent:'center', marginTop:2 }}>
-                <Icon size={11}/> {label}
+        {showStudentStats && (
+          <div style={{ display:'flex', gap:32, marginTop:28, paddingTop:24, borderTop:'1px solid rgba(255,255,255,0.15)', position:'relative', zIndex:1 }}>
+            {[
+              { icon: BookOpen,    label:'Courses',    value: stats.courses    },
+              { icon: Wrench,      label:'Skills',     value: stats.skills     },
+              { icon: CheckCircle, label:'Completed',  value: stats.completed  },
+              { icon: TrendingUp,  label:'In Progress',value: stats.inProgress },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} style={{ textAlign:'center' }}>
+                <div style={{ color:'#fff', fontSize:'1.4rem', fontWeight:800 }}>{value}</div>
+                <div style={{ color:'rgba(255,255,255,0.6)', fontSize:'0.75rem', display:'flex', alignItems:'center', gap:4, justifyContent:'center', marginTop:2 }}>
+                  <Icon size={11}/> {label}
+                </div>
+              </div>
+            ))}
+            <div style={{ marginLeft:'auto', textAlign:'right' }}>
+              <div style={{ color:'#fff', fontSize:'1.4rem', fontWeight:800 }}>{completionPct}%</div>
+              <div style={{ color:'rgba(255,255,255,0.6)', fontSize:'0.75rem', marginTop:2 }}>Completion Rate</div>
+              <div style={{ width:120, height:5, background:'rgba(255,255,255,0.2)', borderRadius:99, marginTop:6 }}>
+                <div style={{ width:`${completionPct}%`, height:'100%', background:'#34d399', borderRadius:99, transition:'width 0.6s ease' }}/>
               </div>
             </div>
-          ))}
-          <div style={{ marginLeft:'auto', textAlign:'right' }}>
-            <div style={{ color:'#fff', fontSize:'1.4rem', fontWeight:800 }}>{completionPct}%</div>
-            <div style={{ color:'rgba(255,255,255,0.6)', fontSize:'0.75rem', marginTop:2 }}>Completion Rate</div>
-            <div style={{ width:120, height:5, background:'rgba(255,255,255,0.2)', borderRadius:99, marginTop:6 }}>
-              <div style={{ width:`${completionPct}%`, height:'100%', background:'#34d399', borderRadius:99, transition:'width 0.6s ease' }}/>
-            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {msg.text && (
@@ -443,7 +445,7 @@ export default function Profile() {
             <SectionTitle icon={User} title="Account Details" />
             <InfoRow icon={Mail}     label="Email"      value={profile.email} />
             <InfoRow icon={Calendar} label="Member Since" value={joinDate} />
-            <InfoRow icon={GraduationCap} label="Role"  value="Student" last />
+            <InfoRow icon={GraduationCap} label="Role"  value={profile.role ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1) : 'User'} last />
           </div>
         </div>
       )}

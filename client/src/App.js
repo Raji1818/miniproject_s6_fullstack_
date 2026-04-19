@@ -11,12 +11,14 @@ import Courses        from './pages/Courses';
 import Skills         from './pages/Skills';
 import Resume         from './pages/Resume';
 import Profile        from './pages/Profile';
-import AdminOverview  from './pages/admin/AdminOverview';
-import AdminCourses   from './pages/admin/AdminCourses';
-import AdminUsers     from './pages/admin/AdminUsers';
-import AdminProgress  from './pages/admin/AdminProgress';
+import AdminOverview     from './pages/admin/AdminOverview';
+import AdminCourses      from './pages/admin/AdminCourses';
+import AdminUsers        from './pages/admin/AdminUsers';
+import AdminProgress     from './pages/admin/AdminProgress';
+import AdminSlotBookings from './pages/admin/AdminSlotBookings';
 import Notifications  from './pages/Notifications';
 import Attendance     from './pages/Attendance';
+import Exams          from './pages/Exams';
 import './index.css';
 
 function ReloadAnimation() {
@@ -147,12 +149,14 @@ function AppShell() {
           <Route path="/profile"   element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/attendance" element={<PrivateRoute><Attendance /></PrivateRoute>} />
           <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
+          <Route path="/exams" element={<PrivateRoute><Exams /></PrivateRoute>} />
 
           {/* Admin routes */}
-          <Route path="/admin"          element={<AdminRoute><AdminOverview /></AdminRoute>} />
-          <Route path="/admin/courses"  element={<AdminRoute><AdminCourses /></AdminRoute>} />
-          <Route path="/admin/users"    element={<AdminRoute><AdminUsers /></AdminRoute>} />
-          <Route path="/admin/progress" element={<AdminRoute><AdminProgress /></AdminRoute>} />
+          <Route path="/admin"                element={<AdminRoute><AdminOverview /></AdminRoute>} />
+          <Route path="/admin/courses"        element={<AdminRoute><AdminCourses /></AdminRoute>} />
+          <Route path="/admin/users"          element={<AdminRoute><AdminUsers /></AdminRoute>} />
+          <Route path="/admin/progress"       element={<AdminRoute><AdminProgress /></AdminRoute>} />
+          <Route path="/admin/slot-bookings"  element={<AdminRoute><AdminSlotBookings /></AdminRoute>} />
 
           {/* Faculty routes */}
           <Route path="/faculty"          element={<FacultyRoute><AdminOverview /></FacultyRoute>} />

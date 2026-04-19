@@ -2,32 +2,34 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, Wrench,
-  BarChart2, Users, GraduationCap, LogOut, Bell, X, ClipboardCheck
+  BarChart2, Users, GraduationCap, LogOut, Bell, X, ClipboardCheck, CalendarCheck
 } from 'lucide-react';
 
 const adminLinks = [
-  { to: '/admin',          icon: LayoutDashboard, label: 'Overview' },
-  { to: '/admin/courses',  icon: BookOpen,        label: 'Courses' },
-  { to: '/admin/users',    icon: Users,           label: 'Users' },
-  { to: '/admin/progress', icon: BarChart2,       label: 'Progress' },
-  { to: '/attendance',     icon: ClipboardCheck,  label: 'Attendance' },
-  { to: '/notifications',  icon: Bell,            label: 'Notifications' },
+  { to: '/admin',               icon: LayoutDashboard, label: 'Overview'      },
+  { to: '/admin/courses',       icon: BookOpen,        label: 'Courses'       },
+  { to: '/admin/users',         icon: Users,           label: 'Users'         },
+  { to: '/admin/progress',      icon: BarChart2,       label: 'Progress'      },
+  { to: '/admin/slot-bookings', icon: CalendarCheck,   label: 'Test Slot Bookings' },
+  { to: '/attendance',          icon: ClipboardCheck,  label: 'Attendance'    },
+  { to: '/notifications',       icon: Bell,            label: 'Notifications' },
 ];
 
 const facultyLinks = [
   { to: '/faculty',          icon: LayoutDashboard, label: 'Overview' },
   { to: '/faculty/students', icon: Users,           label: 'Students' },
   { to: '/faculty/progress', icon: BarChart2,       label: 'Progress' },
+  { to: '/exams',             icon: CalendarDays,    label: 'Exams' },
   { to: '/attendance',       icon: ClipboardCheck,  label: 'Attendance' },
   { to: '/notifications',    icon: Bell,            label: 'Notifications' },
 ];
 
 const studentLinks = [
-  { to: '/dashboard',      icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/courses',        icon: BookOpen,        label: 'Courses'   },
-  { to: '/skills',         icon: Wrench,          label: 'Skills'    },
-  { to: '/attendance',     icon: ClipboardCheck,  label: 'Attendance' },
-  { to: '/notifications',  icon: Bell,            label: 'Notifications' },
+  { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard'   },
+  { to: '/courses',       icon: BookOpen,        label: 'Courses'     },
+  { to: '/skills',        icon: Wrench,          label: 'Skills'      },
+  { to: '/attendance',    icon: ClipboardCheck,  label: 'Attendance'  },
+  { to: '/notifications', icon: Bell,            label: 'Notifications' },
 ];
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {

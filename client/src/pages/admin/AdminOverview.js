@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
-import { Users, BookOpen, ArrowRight, GraduationCap, LayoutDashboard, Bell, ClipboardCheck, AlertTriangle } from 'lucide-react';
+import { Users, BookOpen, ArrowRight, GraduationCap, LayoutDashboard, Bell, ClipboardCheck, AlertTriangle, CalendarCheck } from 'lucide-react';
 
 export default function AdminOverview() {
   const { user } = useAuth();
@@ -98,6 +98,7 @@ export default function AdminOverview() {
             {!isFaculty && <Link to="/admin/courses" className="btn btn-primary btn-full"><BookOpen size={15} /> Manage Courses</Link>}
             <Link to={isFaculty ? '/faculty/students' : '/admin/users'} className="btn btn-success btn-full"><Users size={15} /> Manage Students</Link>
             <Link to={isFaculty ? '/faculty/progress' : '/admin/progress'} className="btn btn-ghost btn-full"><ArrowRight size={15} /> View Progress</Link>
+            <Link to="/admin/slot-bookings" className="btn btn-primary btn-full"><CalendarCheck size={15} /> Slot Bookings</Link>
             <Link to="/attendance" className="btn btn-primary btn-full"><ClipboardCheck size={15} /> Attendance</Link>
             <Link to="/notifications" className="btn btn-light btn-full"><Bell size={15} /> Notifications</Link>
           </div>

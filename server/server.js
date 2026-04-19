@@ -21,6 +21,8 @@ app.use('/api/profile',  require('./routes/profile'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/schedule',      require('./routes/schedule'));
 app.use('/api/points',        require('./routes/points'));
+app.use('/api/exams',         require('./routes/exams'));
+app.use('/api/slots',         require('./routes/slots'));
 
 app.get('/', (req, res) => res.json({ message: 'Student Dev API running' }));
 

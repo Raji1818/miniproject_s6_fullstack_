@@ -45,8 +45,8 @@ export default function Skills() {
     <div>
       <div className="page-header-row">
         <div className="page-header" style={{ marginBottom: 0 }}>
-          <h1>Skills</h1>
-          <p>Track and manage your technical proficiencies</p>
+          <h1>My Skills</h1>
+          <p>Track your technical skills — completed courses are added automatically</p>
         </div>
         <button className="btn btn-primary" onClick={() => { cancel(); setShowForm(!showForm); }}>
           <Plus size={15} /> Add Skill
