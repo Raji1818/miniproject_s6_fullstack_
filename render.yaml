@@ -1,0 +1,28 @@
+services:
+  # Backend API
+  - type: web
+    name: studentdev-api
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        sync: false        # set this manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false        # set this manually in Render dashboard
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+
+  # Frontend
+  - type: web
+    name: studentdev-client
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_API_URL
+        sync: false        # set to your backend Render URL
