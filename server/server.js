@@ -27,6 +27,7 @@ app.use('/api/points',        require('./routes/points'));
 app.use('/api/exams',         require('./routes/exams'));
 app.use('/api/slots',         require('./routes/slots'));
 
+app.get('/api', (req, res) => res.json({ message: 'Student Dev API running' }));
 app.get('/', (req, res) => res.json({ message: 'Student Dev API running' }));
 
 // Connect to MongoDB Atlas FIRST, then start server
