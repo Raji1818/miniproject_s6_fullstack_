@@ -77,7 +77,7 @@ export default function Courses() {
       flash('Test slot booked successfully! Your slot is confirmed.');
       setBookingModal(null);
       setSelectedSlot(null);
-      load();
+      await load();
     } catch (err) {
       flash(err.response?.data?.message || 'Booking failed.', 'error');
     }
@@ -250,6 +250,13 @@ export default function Courses() {
                   </div>
                 </div>
               ))}
+              {slots.length === 0 && (
+                <div className="empty-state" style={{ padding: '24px 8px' }}>
+                  <div className="empty-state-icon"><CalendarCheck size={22} /></div>
+                  <h3>No open slots right now</h3>
+                  <p>All upcoming test slots are filled. Please check again later or contact admin.</p>
+                </div>
+              )}
             </div>
 
             {/* Footer */}

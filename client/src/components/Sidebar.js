@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, Wrench,
-  BarChart2, Users, GraduationCap, LogOut, Bell, X, ClipboardCheck, CalendarCheck
+  BarChart2, Users, GraduationCap, LogOut, Bell, X, ClipboardCheck, CalendarCheck, CalendarDays
 } from 'lucide-react';
 
 const adminLinks = [

@@ -1,84 +1,126 @@
-const router        = require('express').Router();
-const SlotBooking   = require('../models/SlotBooking');
-const Progress      = require('../models/Progress');
-const { protect, adminOnly } = require('../middleware/auth');
+const router = require('express').Router();
+const SlotBooking = require('../models/SlotBooking');
+const Progress = require('../models/Progress');
+const { protect, adminOnly, rolesAllowed } = require('../middleware/auth');
 
-// Available test slots (fixed pool — admin can extend later)
-const AVAILABLE_SLOTS = [
-  { date: '2025-06-10', time: '09:00 AM' },
-  { date: '2025-06-10', time: '11:00 AM' },
-  { date: '2025-06-10', time: '02:00 PM' },
-  { date: '2025-06-11', time: '09:00 AM' },
-  { date: '2025-06-11', time: '11:00 AM' },
-  { date: '2025-06-11', time: '02:00 PM' },
-  { date: '2025-06-12', time: '09:00 AM' },
-  { date: '2025-06-12', time: '11:00 AM' },
-  { date: '2025-06-12', time: '02:00 PM' },
-  { date: '2025-06-13', time: '10:00 AM' },
-  { date: '2025-06-13', time: '01:00 PM' },
-  { date: '2025-06-14', time: '10:00 AM' },
-  { date: '2025-06-14', time: '03:00 PM' },
-];
+const SLOT_TIMES = ['09:00 AM', '11:00 AM', '02:00 PM'];
+const OPEN_DAYS = 14;
 
-// GET /api/slots/available  — list all slots
-router.get('/available', protect, (req, res) => {
-  res.json(AVAILABLE_SLOTS);
+const toDateKey = (date) => date.toISOString().slice(0, 10);
+
+const buildAvailableSlots = () => {
+  const slots = [];
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  cursor.setDate(cursor.getDate() + 1);
+
+  while (slots.length < OPEN_DAYS * SLOT_TIMES.length) {
+    if (cursor.getDay() !== 0) {
+      const date = toDateKey(cursor);
+      SLOT_TIMES.forEach((time) => slots.push({ date, time }));
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return slots;
+};
+
+const getOpenSlots = async () => {
+  const availableSlots = buildAvailableSlots();
+  const dates = [...new Set(availableSlots.map((slot) => slot.date))];
+  const bookings = await SlotBooking.find({ date: { $in: dates } }).select('date time -_id');
+  const bookedSlots = new Set(bookings.map((booking) => `${booking.date}|${booking.time}`));
+
+  return availableSlots.filter((slot) => !bookedSlots.has(`${slot.date}|${slot.time}`));
+};
+
+// GET /api/slots/available - list upcoming open slots for students
+router.get('/available', protect, rolesAllowed('student'), async (req, res) => {
+  try {
+    const slots = await getOpenSlots();
+    res.json(slots);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// GET /api/slots/my  — student's own bookings
-router.get('/my', protect, async (req, res) => {
+// GET /api/slots/my - student's own bookings
+router.get('/my', protect, rolesAllowed('student'), async (req, res) => {
   try {
     const bookings = await SlotBooking.find({ userId: req.user.id })
-      .populate('courseId', 'title duration');
+      .populate('courseId', 'title duration')
+      .sort({ date: 1, time: 1 });
     res.json(bookings);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// POST /api/slots  — student books a slot
-router.post('/', protect, async (req, res) => {
+// POST /api/slots - student books a slot
+router.post('/', protect, rolesAllowed('student'), async (req, res) => {
   try {
     const { courseId, date, time } = req.body;
 
-    // must be enrolled and completed
-    const prog = await Progress.findOne({ userId: req.user.id, courseId });
-    if (!prog)                        return res.status(400).json({ message: 'You are not enrolled in this course.' });
-    if (prog.status !== 'completed')  return res.status(400).json({ message: 'Complete the course before booking a test slot.' });
+    if (!courseId || !date || !time) {
+      return res.status(400).json({ message: 'courseId, date and time are required.' });
+    }
 
-    // already booked?
-    const exists = await SlotBooking.findOne({ userId: req.user.id, courseId });
-    if (exists) return res.status(400).json({ message: 'You already have a slot booked for this course.' });
+    const prog = await Progress.findOne({ userId: req.user.id, courseId });
+    if (!prog) return res.status(400).json({ message: 'You are not enrolled in this course.' });
+    if (prog.status !== 'completed') {
+      return res.status(400).json({ message: 'Complete the course before booking a test slot.' });
+    }
+
+    const existingBooking = await SlotBooking.findOne({ userId: req.user.id, courseId });
+    if (existingBooking) {
+      return res.status(400).json({ message: 'You already have a slot booked for this course.' });
+    }
+
+    const openSlots = await getOpenSlots();
+    const isOpenSlot = openSlots.some((slot) => slot.date === date && slot.time === time);
+    if (!isOpenSlot) {
+      return res.status(400).json({ message: 'That slot is no longer available. Please choose another one.' });
+    }
 
     const slot = `${date} ${time}`;
     const booking = await SlotBooking.create({ userId: req.user.id, courseId, slot, date, time });
     res.status(201).json(booking);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// DELETE /api/slots/:id  — student cancels booking
-router.delete('/:id', protect, async (req, res) => {
+// DELETE /api/slots/:id - student cancels booking
+router.delete('/:id', protect, rolesAllowed('student'), async (req, res) => {
   try {
     await SlotBooking.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
     res.json({ message: 'Booking cancelled.' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// GET /api/slots/admin/all  — admin sees all bookings
+// GET /api/slots/admin/all - admin sees all bookings
 router.get('/admin/all', protect, adminOnly, async (req, res) => {
   try {
     const bookings = await SlotBooking.find()
-      .populate('userId',   'name email idNumber')
+      .populate('userId', 'name email idNumber')
       .populate('courseId', 'title duration')
       .sort({ createdAt: -1 });
     res.json(bookings);
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// DELETE /api/slots/admin/:id  — admin removes a booking
+// DELETE /api/slots/admin/:id - admin removes a booking
 router.delete('/admin/:id', protect, adminOnly, async (req, res) => {
   try {
     await SlotBooking.findByIdAndDelete(req.params.id);
     res.json({ message: 'Booking removed.' });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;
